@@ -44,4 +44,11 @@ router.put(
   wrap(workoutPlanController.updateExercise.bind(workoutPlanController))
 );
 
+// Delete a workout plan
+router.delete(
+  '/workout-plans/:id',
+  authMiddleware,
+  wrap(workoutPlanController.delete.bind(workoutPlanController))
+);
+
 export default router; 

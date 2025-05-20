@@ -291,4 +291,46 @@ export class WorkoutPlanController {
       res.status(500).json({ error: 'Failed to update exercise' });
     }
   }
+
+  async delete(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const instructorId = req.user?.id;
+
+      if (!instructorId) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return;
+      }
+
+      // Verifica se o treino existe e pertence ao instrutor
+      const workoutPlan = await prisma.workoutPlan.findFirst({
+        where: {
+          id,
+          instructorId,
+        },
+      });
+
+      if (!workoutPlan) {
+        res.status(404).json({ error: 'Plano de treino não encontrado ou não associado a este instrutor' });
+        return;
+      }
+
+      // Deleta os exercícios associados ao plano
+      await prisma.exerciseInPlan.deleteMany({
+        where: {
+          workoutPlanId: id,
+        },
+      });
+
+      // Deleta o plano de treino
+      await prisma.workoutPlan.delete({
+        where: { id },
+      });
+
+      res.status(204).send();
+    } catch (error) {
+      console.error('Error in delete:', error);
+      res.status(500).json({ error: 'Falha ao excluir plano de treino' });
+    }
+  }
 } 
