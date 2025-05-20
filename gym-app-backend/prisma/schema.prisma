@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Instructor {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  password     String
+  avatar       String?
+  clients      Client[] // Relação: Um instrutor pode ter vários clientes
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  workoutPlans WorkoutPlan[]
+  workoutPlanEdits WorkoutPlanEdit[]
+}
+
+model Client {
+  id         String   @id @default(uuid())
+  name       String
+  email      String?  @unique
+  phone      String?
+  externalId String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  workoutPlans WorkoutPlan[]
+
+  instructorId String
+  instructor   Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade) // Relação: Um cliente pertence a um instrutor
+}
+
+model WorkoutPlan {
+  id              String           @id @default(uuid())
+  name            String // Ex: "Treino A (Peito e Tríceps - Volume)"
+  description     String?          @db.LongText // Descrição geral do plano, se houver
+  htmlContent     String?          @db.LongText // Opcional: para armazenar o HTML original da OpenAI, se desejar
+  clientId        String
+  client          Client           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  instructorId    String
+  instructor      Instructor       @relation(fields: [instructorId], references: [id], onDelete: Cascade) // Quem gerou/atribuiu
+  exercisesInPlan ExerciseInPlan[]
+  edits           WorkoutPlanEdit[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // Input data fields
+  gender          String?
+  age             String?
+  weight          String?
+  height          String?
+  bodyType        String?
+  goal            String?
+  level           String?
+  injuries        String?          @db.LongText
+  availability    String?          @db.LongText
+  preferences     String?          @db.LongText
+
+  @@index([clientId])
+  @@index([instructorId])
+}
+
+model Exercise {
+  id              String           @id @default(uuid())
+  name            String           @unique // Nome do exercício (ex: "Supino Reto com Barra")
+  description     String?          @db.LongText // Instruções, dicas (pode vir da OpenAI ou ser editado)
+  muscleGroup     String? // Grupo muscular principal (pode vir da OpenAI ou ser editado)
+  videoUrl        String? // Link para vídeo demonstrativo (opcional)
+  plansContaining ExerciseInPlan[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model ExerciseInPlan {
+  id           String  @id @default(uuid())
+  sets         String? // Ex: "4", "3-4"
+  reps         String? // Ex: "6-10", "Máximo (falha)"
+  rest         String? // Ex: "120-180s", "90s"
+  observations String? @db.LongText // Observações específicas do exercício no plano
+  order        Int     @default(0) // Para manter a ordem dos exercícios no treino
+
+  workoutPlanId String
+  workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  exerciseId    String
+  exercise      Exercise    @relation(fields: [exerciseId], references: [id], onDelete: Cascade) // Ligação com a "biblioteca" de exercícios
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([workoutPlanId])
+  @@index([exerciseId])
+}
+
+model WorkoutPlanEdit {
+  id            String     @id @default(uuid())
+  workoutPlanId String
+  workoutPlan   WorkoutPlan @relation(fields: [workoutPlanId], references: [id], onDelete: Cascade)
+  instructorId  String
+  instructor    Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  field         String     // Campo que foi editado (ex: "htmlContent", "exercisesInPlan")
+  oldValue      String?    @db.LongText
+  newValue      String?    @db.LongText
+  createdAt     DateTime   @default(now())
+
+  @@index([workoutPlanId])
+  @@index([instructorId])
+}

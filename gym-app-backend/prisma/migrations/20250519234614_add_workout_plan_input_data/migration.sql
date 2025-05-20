@@ -1,0 +1,11 @@
+-- AlterTable
+ALTER TABLE `WorkoutPlan` ADD COLUMN `age` VARCHAR(191) NULL,
+    ADD COLUMN `availability` LONGTEXT NULL,
+    ADD COLUMN `bodyType` VARCHAR(191) NULL,
+    ADD COLUMN `gender` VARCHAR(191) NULL,
+    ADD COLUMN `goal` VARCHAR(191) NULL,
+    ADD COLUMN `height` VARCHAR(191) NULL,
+    ADD COLUMN `injuries` LONGTEXT NULL,
+    ADD COLUMN `level` VARCHAR(191) NULL,
+    ADD COLUMN `preferences` LONGTEXT NULL,
+    ADD COLUMN `weight` VARCHAR(191) NULL;
