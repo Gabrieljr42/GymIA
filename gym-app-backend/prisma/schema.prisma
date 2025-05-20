@@ -28,11 +28,24 @@ model Client {
   externalId String?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  lastCheckIn DateTime? // Último check-in do cliente
 
   workoutPlans WorkoutPlan[]
+  checkIns    CheckIn[] // Relação: Um cliente pode ter vários check-ins
 
   instructorId String
   instructor   Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade) // Relação: Um cliente pertence a um instrutor
+}
+
+model CheckIn {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([clientId])
 }
 
 model WorkoutPlan {
