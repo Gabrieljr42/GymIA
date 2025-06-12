@@ -92,4 +92,22 @@ export class OpenAIService {
       throw new Error('Failed to generate workout plan');
     }
   }
-} 
+
+  async chat(
+    messages: { role: 'system' | 'user' | 'assistant'; content: string }[],
+    model: string = process.env.OPENAI_CHAT_MODEL || 'gpt-4o-mini'
+  ) {
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model,
+        messages,
+        max_tokens: 2000,
+        temperature: 0.7,
+      });
+      return completion.choices[0].message.content;
+    } catch (error) {
+      console.error('Error during chat completion:', error);
+      throw new Error('Chat completion failed');
+    }
+  }
+}

@@ -30,7 +30,7 @@ app.use((req, res, next) => {
 // Middleware para tratamento de erros global
 // (err, req, res, next) =\> {} - o 'next' é importante para o Express reconhecer como error handler
 app.use((err: Error, req: Request, res: Response, next: Function) => {
-    console.error(err.stack);
+    console.error(err.stack);   
     res.status(500).json({ message: 'Algo deu errado no servidor!', error: err.message });
 });
 

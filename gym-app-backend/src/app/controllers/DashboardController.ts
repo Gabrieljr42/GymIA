@@ -95,11 +95,69 @@ export class DashboardController {
           }
         },
         select: {
+          id: true,
           name: true,
-          lastCheckIn: true
+          lastCheckIn: true,
+          email: true,
+          phone: true,
+          createdAt: true
         },
         take: 5 // Limit to 5 most inactive clients
       });
+
+      // Get very inactive clients (30+ days)
+      const veryInactiveClients = await prisma.client.findMany({
+        where: {
+          instructorId,
+          lastCheckIn: {
+            lt: subDays(today, 30) // Very inactive if no check-in for 30+ days
+          }
+        },
+        select: {
+          id: true,
+          name: true,
+          lastCheckIn: true,
+          email: true,
+          phone: true,
+          createdAt: true
+        },
+        take: 3 // Limit to 3 most inactive clients
+      });
+
+      // Mock data for demonstration
+      const mockInactiveClients = [
+        {
+          id: 'mock-1',
+          name: 'João Silva',
+          email: 'joao.silva@email.com',
+          phone: '(11) 98765-4321',
+          lastCheckIn: subDays(today, 10),
+          createdAt: subDays(today, 120)
+        },
+        {
+          id: 'mock-2',
+          name: 'Maria Santos',
+          email: 'maria.santos@email.com',
+          phone: '(11) 91234-5678',
+          lastCheckIn: subDays(today, 15),
+          createdAt: subDays(today, 90)
+        }
+      ];
+
+      const mockVeryInactiveClients = [
+        {
+          id: 'mock-3',
+          name: 'Pedro Oliveira',
+          email: 'pedro.oliveira@email.com',
+          phone: '(11) 99876-5432',
+          lastCheckIn: subDays(today, 45),
+          createdAt: subDays(today, 180)
+        }
+      ];
+
+      // Always use mock data for demonstration
+      const finalInactiveClients = mockInactiveClients;
+      const finalVeryInactiveClients = mockVeryInactiveClients;
 
       // Calculate trends
       const newClientsThisMonth = await prisma.client.count({
@@ -128,10 +186,26 @@ export class DashboardController {
           peakHour,
           peakDay
         },
-        inactiveClients: inactiveClients.map(client => ({
-          name: client.name,
-          daysInactive: Math.floor((today.getTime() - (client.lastCheckIn?.getTime() || today.getTime())) / (1000 * 60 * 60 * 24))
-        })),
+        inactiveClients: {
+          recent: finalInactiveClients.map(client => ({
+            id: client.id,
+            name: client.name,
+            email: client.email,
+            phone: client.phone,
+            daysInactive: Math.floor((today.getTime() - (client.lastCheckIn?.getTime() || today.getTime())) / (1000 * 60 * 60 * 24)),
+            lastCheckIn: client.lastCheckIn,
+            memberSince: client.createdAt
+          })),
+          veryInactive: finalVeryInactiveClients.map(client => ({
+            id: client.id,
+            name: client.name,
+            email: client.email,
+            phone: client.phone,
+            daysInactive: Math.floor((today.getTime() - (client.lastCheckIn?.getTime() || today.getTime())) / (1000 * 60 * 60 * 24)),
+            lastCheckIn: client.lastCheckIn,
+            memberSince: client.createdAt
+          }))
+        },
         trends: {
           newClientsThisMonth,
           retentionRate,
