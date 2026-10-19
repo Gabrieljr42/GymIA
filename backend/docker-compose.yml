@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  db:
+    container_name: gymBD
+    hostname: gymBD
+    image: mysql:8.0 # Specify MySQL 8.0 version explicitly
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_general_ci
+    ports:
+      - "3306:3306" # Mapeia a porta 3306 do container para a porta 3306 do seu host
+    environment:
+      MYSQL_DATABASE: gym
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+      MYSQL_ROOT_HOST: '%'
+    volumes: # Adicionado para persistência de dados
+      - gym_db_data:/var/lib/mysql
+    restart: always
+
+volumes: # Adicionado para persistência de dados
+  gym_db_data:

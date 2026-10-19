@@ -1,0 +1,8 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-typescript-next",
+        "burkeholland.simple-react-snippets",
+        "styled-components.vscode-styled-components"
+    ]
+}
